@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local LLM Context Gauge</title>
+    <style>
+        :root {
+            --bg-color: #1e1e2e;
+            --chat-bg: #2b2b3b;
+            --accent: #89b4fa;
+            --text: #cdd6f4;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text); display: flex; flex-direction: column; align-items: center; height: 100vh; margin: 0; }
+        
+        /* Layout */
+        .container { width: 90%; max-width: 800px; display: flex; flex-direction: column; height: 90vh; margin-top: 20px; }
+        
+        /* Header & Gauge */
+        .header { margin-bottom: 20px; }
+        .gauge-container { background: #45475a; height: 25px; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .gauge-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #a6e3a1, #f9e2af); transition: width 0.5s ease, background 0.5s ease; }
+        .gauge-text { position: absolute; width: 100%; text-align: center; line-height: 25px; font-weight: bold; color: #111; font-size: 0.9rem; mix-blend-mode: overlay; }
+
+        /* Chat Area */
+        .chat-box { flex-grow: 1; background: var(--chat-bg); border-radius: 10px; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; border: 1px solid #45475a; }
+        .message { padding: 10px 15px; border-radius: 10px; max-width: 75%; line-height: 1.5; }
+        .user { align-self: flex-end; background-color: var(--accent); color: #1e1e2e; }
+        .bot { align-self: flex-start; background-color: #45475a; color: var(--text); }
+
+        /* Input Area */
+        .input-area { margin-top: 20px; display: flex; gap: 10px; }
+        input { flex-grow: 1; padding: 15px; border-radius: 8px; border: none; background: #313244; color: white; font-size: 1rem; outline: none; }
+        button { padding: 15px 25px; border-radius: 8px; border: none; background: var(--accent); color: #1e1e2e; font-weight: bold; cursor: pointer; transition: transform 0.1s; }
+        button:active { transform: scale(0.98); }
+        .reset-btn { background: #f38ba8; }
+
+        /* Utility */
+        .loading { font-style: italic; opacity: 0.7; font-size: 0.8rem; margin-left: 10px; display: none;}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>Context Window Consumption</h2>
+        <div class="gauge-container">
+            <div class="gauge-fill" id="gaugeFill"></div>
+            <div class="gauge-text" id="gaugeText">0 / 4096 Tokens (0%)</div>
+        </div>
+    </div>
+
+    <div class="chat-box" id="chatBox">
+        <div class="message bot">Hello! I am your local AI. Watch the gauge above fill up as we talk.</div>
+    </div>
+
+    <div class="input-area">
+        <button class="reset-btn" onclick="resetChat()">Reset</button>
+        <input type="text" id="userInput" placeholder="Type a message..." onkeypress="handleEnter(event)">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    <div class="loading" id="loading">AI is thinking...</div>
+</div>
+
+<script>
+    const chatBox = document.getElementById('chatBox');
+    const userInput = document.getElementById('userInput');
+    const gaugeFill = document.getElementById('gaugeFill');
+    const gaugeText = document.getElementById('gaugeText');
+    const loading = document.getElementById('loading');
+
+    function handleEnter(e) {
+        if (e.key === 'Enter') sendMessage();
+    }
+
+    async function sendMessage() {
+        const text = userInput.value.trim();
+        if (!text) return;
+
+        // Add User Message
+        appendMessage(text, 'user');
+        userInput.value = '';
+        loading.style.display = 'block';
+
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            });
+            const data = await response.json();
+
+            // Add Bot Message
+            appendMessage(data.response, 'bot');
+            
+            // Update Gauge
+            updateGauge(data.usage_percent, data.current_tokens, data.max_tokens);
+
+        } catch (error) {
+            console.error('Error:', error);
+            appendMessage("Error connecting to server.", 'bot');
+        } finally {
+            loading.style.display = 'none';
+        }
+    }
+
+    async function resetChat() {
+        await fetch('/reset', { method: 'POST' });
+        chatBox.innerHTML = '<div class="message bot">Memory cleared. Context reset.</div>';
+        updateGauge(0, 0, 4096);
+    }
+
+    function appendMessage(text, sender) {
+        const div = document.createElement('div');
+        div.classList.add('message', sender);
+        div.innerText = text;
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function updateGauge(percent, current, max) {
+        gaugeFill.style.width = percent + '%';
+        gaugeText.innerText = `${current} / ${max} Tokens (${percent}%)`;
+        
+        // Change color based on usage
+        if (percent < 50) gaugeFill.style.background = '#a6e3a1'; // Green
+        else if (percent < 80) gaugeFill.style.background = '#f9e2af'; // Yellow
+        else gaugeFill.style.background = '#f38ba8'; // Red
+    }
+</script>
+
+</body>
+</html>

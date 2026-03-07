@@ -1,0 +1,7 @@
+flask
+langchain
+langchain-huggingface
+transformers
+accelerate
+bitsandbytes
+torch
