@@ -78,10 +78,21 @@ This project runs a **Llama-3.2-3B-Instruct** model locally on your machine and 
 ## 📂 Project Structure
 
 ```text
-llm-context-gauge/
-├── app.py                 # Main Flask application & LLM logic
-├── requirements.txt       # Python dependencies
-├── templates/
-│   └── index.html         # Chat interface & Gauge UI
-└── README.md              # Documentation
+│   .gitignore
+│   app.py
+│   f
+│   README.md
+│   requirements.txt
+│
+├───models
+├───static
+│   ├───css
+│   │       style.css
+│   │
+│   └───js
+│           main.js
+│
+└───templates
+        index.html
+
 ```
