@@ -1,7 +1,8 @@
-flask
-langchain
-langchain-huggingface
-transformers
-accelerate
-bitsandbytes
+Flask
 torch
+transformers
+langchain-huggingface
+chromadb
+sentence-transformers
+bitsandbytes
+accelerate
