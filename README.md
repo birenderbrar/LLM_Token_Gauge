@@ -38,7 +38,7 @@ This project runs a **Gemma-2-2B-IT** model locally on your machine and displays
 
 1.  **Clone the repository**
     ```bash
-    git clone https://github.com/yourusername/super-chat.git
+    git clone https://github.com/birenderbrar/Super-Chat.git
     cd super-chat
     ```
 
