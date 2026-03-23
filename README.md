@@ -83,15 +83,5 @@ This project runs a **Gemma-2-2B-IT** model locally on your machine and displays
 4.  **Inspect Vector DB (Optional)**
     *   Run `python peek_db.py` in a separate terminal to see exactly how ChromaDB is storing and retrieving your archived summaries via semantic search.
 
-## 📂 Project Structure
 
-```text
-super-chat/
-├── app.py                 # Main Flask application & LLM logic
-├── peek_db.py             # CLI utility to inspect ChromaDB vector embeddings
-├── float_check.py         # Utility to inspect model weight data types
-├── requirements.txt       # Python dependencies
-├── templates/
-│   └── index.html         # Chat interface & Gauge UI
-└── README.md              # Documentation
 ```
